@@ -1,4 +1,5 @@
 import Task from "../models/tasks.model.mjs";
+import PDFDocument from "pdfkit";
 
 export const createTask = async (req, res) => {
   try {
@@ -116,6 +117,59 @@ export const deleteTask = async (req, res) => {
   } catch (error) {
     console.error("Error fetching tasks: ", error);
     return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export const generateReport = async (req, res) => {
+  try {
+    const userId = req.id; 
+    const { priority, status, dueDate } = req.query;
+
+    // Fetch tasks based on filters
+    const whereClause = { createdBy: userId };
+    if (priority) whereClause.priority = priority;
+    if (status) whereClause.status = status;
+    if (dueDate) whereClause.dueDate = dueDate;
+
+    const tasks = await Task.findAll({
+      where: whereClause,
+      order: [["id", "ASC"]],
+    });
+
+    // Create a new PDF document
+    const doc = new PDFDocument();
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=task_report_${Date.now()}.pdf`
+    );
+
+    doc.pipe(res);
+
+    doc.fontSize(18).text("Task Report", { align: "center" });
+    doc.moveDown();
+
+    tasks.forEach((task, index) => {
+      doc
+        .fontSize(12)
+        .text(`Task #${index + 1}`, { underline: true })
+        .moveDown(0.5);
+      doc.text(`Title: ${task.title}`);
+      doc.text(`Priority: ${task.priority.charAt(0).toUpperCase()+task.priority.slice(1)}`);
+      doc.text(`Status: ${task.status || 'Incomplete'}`);
+      doc.text(`Due Date: ${task.dueDate.toLocaleString()}`);
+      doc.text(`Created On: ${task.createdAt.toLocaleString()}`);
+      doc.moveDown();
+    });
+
+    // Finalize the PDF and end the response
+    doc.end();
+  } catch (error) {
+    console.error("Error generating task report: ", error);
+    res.status(500).json({
       message: "Internal Server Error",
     });
   }
