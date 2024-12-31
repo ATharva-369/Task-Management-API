@@ -4,6 +4,8 @@ import models from "./src/models/index.mjs";
 import authRoute from "./src/routes/auth.route.mjs";
 import taskRoute from "./src/routes/task.route.mjs";
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from './swagger-output.json' with { type: 'json' };
 
 dotenv.config();
 
@@ -31,6 +33,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoute);
 app.use("/api/task",taskRoute);
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");
