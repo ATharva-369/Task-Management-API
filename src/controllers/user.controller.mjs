@@ -23,8 +23,10 @@ export const signup = async (req, res) => {
       email,
       password: hashedPassword,
     });
+    console.log("-------------------------------------------------------------------")
+    console.log(user.id)
     const token = jwt.sign(
-      { userId: user.id, email: user.email }, // Payload: user-specific data
+      { id: user.id, email: user.email }, // Payload: user-specific data
       process.env.JWT_SECRET, // Secret key stored in .env
       { expiresIn: "1h" } // Token expiration (1 hour in this case)
     );
@@ -60,13 +62,15 @@ export const login = async (req, res) => {
       });
     }
 
-    console.log(process.env.JWT_SECRET)
-
+    // console.log(process.env.JWT_SECRET)
+    console.log("-------------------------------------------------------------------")
+    console.log(user.id)
     const token = jwt.sign(
-      { userId: user.id, email: user.email }, // Payload: user-specific data
+      { id: user.id, email: user.email }, // Payload: user-specific data
       process.env.JWT_SECRET, // Secret key stored in .env
       { expiresIn: "1h" } // Token expiration (1 hour in this case)
     );
+    
     return res.status(200).json({
       message: "Logged in",
       token,

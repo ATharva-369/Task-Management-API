@@ -32,13 +32,84 @@ export const createTask = async (req, res) => {
 };
 export const fetchTasks = async (req, res) => {
   try {
-  } catch (error) {}
+    const userId = req.id;
+
+    const tasks = await Task.findAll({
+      where: {
+        createdBy: userId,
+      },
+    });
+    return res.status(200).json({
+      tasks,
+    });
+  } catch (error) {
+    console.error("Error fetching tasks: ", error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
 export const updateTask = async (req, res) => {
   try {
-  } catch (error) {}
+    const { taskId, title, description, priority, status, dueDate } = req.body;
+    const userId = req.id;
+    console.log(userId)
+
+    const updateData = {
+      ...(title && { title }),
+      ...(description && { description }),
+      ...(priority && { priority }),
+      ...(status && { status }),
+      ...(dueDate && { dueDate }),
+    };
+
+    const task = await Task.update(updateData, {
+      where: {
+        createdBy: userId,
+        id: taskId,
+      },
+    });
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found",
+      });
+    }
+    return res.status(200).json({
+        message: "Task updated successfully"
+    })
+  } catch (error) {
+    console.error("Error updating tasks: ", error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
 export const deleteTask = async (req, res) => {
   try {
-  } catch (error) {}
+    const userId = req.id;
+    const {taskId} = req.body;
+
+    const destroyCount = await Task.destroy({
+        where:{
+            createdBy: userId,
+            id: taskId
+        }
+    })
+
+    if(destroyCount == 0){
+        return res.status(404).json({
+            message: "Task does not exist"
+        })
+    }
+
+    return res.status(200).json({
+        message: "Task destroyed successfully"
+    })
+
+  } catch (error) {
+    console.error("Error fetching tasks: ", error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
 };
