@@ -33,11 +33,19 @@ export const createTask = async (req, res) => {
 export const fetchTasks = async (req, res) => {
   try {
     const userId = req.id;
+    const { priority, status, dueDate, limit = 10, page = 1 } = req.query;
+
+    const whereClause = { createdBy: userId };
+
+    if (priority) whereClause.priority = priority;
+    if (status) whereClause.status = status;
+    if (dueDate) whereClause.dueDate = dueDate;
 
     const tasks = await Task.findAll({
-      where: {
-        createdBy: userId,
-      },
+      limit: parseInt(limit),
+      offset: (page - 1) * limit, // Calculate the starting point
+      order: [["id", "ASC"]],
+      where: whereClause,
     });
     return res.status(200).json({
       tasks,
@@ -53,7 +61,7 @@ export const updateTask = async (req, res) => {
   try {
     const { taskId, title, description, priority, status, dueDate } = req.body;
     const userId = req.id;
-    console.log(userId)
+    console.log(userId);
 
     const updateData = {
       ...(title && { title }),
@@ -75,8 +83,8 @@ export const updateTask = async (req, res) => {
       });
     }
     return res.status(200).json({
-        message: "Task updated successfully"
-    })
+      message: "Task updated successfully",
+    });
   } catch (error) {
     console.error("Error updating tasks: ", error);
     return res.status(500).json({
@@ -87,25 +95,24 @@ export const updateTask = async (req, res) => {
 export const deleteTask = async (req, res) => {
   try {
     const userId = req.id;
-    const {taskId} = req.body;
+    const { taskId } = req.body;
 
     const destroyCount = await Task.destroy({
-        where:{
-            createdBy: userId,
-            id: taskId
-        }
-    })
+      where: {
+        createdBy: userId,
+        id: taskId,
+      },
+    });
 
-    if(destroyCount == 0){
-        return res.status(404).json({
-            message: "Task does not exist"
-        })
+    if (destroyCount == 0) {
+      return res.status(404).json({
+        message: "Task does not exist",
+      });
     }
 
     return res.status(200).json({
-        message: "Task destroyed successfully"
-    })
-
+      message: "Task destroyed successfully",
+    });
   } catch (error) {
     console.error("Error fetching tasks: ", error);
     return res.status(500).json({

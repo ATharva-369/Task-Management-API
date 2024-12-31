@@ -18,11 +18,11 @@ const Task = sequelize.define("tasks", {
         allowNull: true
     },
     priority: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM("low","medium","high"),
         allowNull: false
     },
     status: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM("incomplete","ongoing","completed"),
         allowNull: true
     },
     dueDate: {
