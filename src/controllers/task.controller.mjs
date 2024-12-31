@@ -125,7 +125,7 @@ export const deleteTask = async (req, res) => {
 export const generateReport = async (req, res) => {
   try {
     const userId = req.id; 
-    const { priority, status, dueDate } = req.query;
+    const { priority, status, dueDate, limit = 10, page = 1 } = req.query;
 
     // Fetch tasks based on filters
     const whereClause = { createdBy: userId };
@@ -135,6 +135,8 @@ export const generateReport = async (req, res) => {
 
     const tasks = await Task.findAll({
       where: whereClause,
+      limit: parseInt(limit),
+      offset: (page - 1) * limit, // Calculate the starting point
       order: [["id", "ASC"]],
     });
 
